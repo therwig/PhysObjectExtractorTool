@@ -1,4 +1,10 @@
-void plot(){
+#include "TFile.h"
+#include "TChain.h"
+#include "TTreeReader.h"
+#include "TTreeReaderArray.h"
+#include "TH1F.h"
+
+int main(){
     TChain *c1 = new TChain("myelectrons/Events");
     c1->Add("/eos/user/t/therwig/jtfi/240621_SingleNeutrino_prod1/output_*.root");
     //c1->Add("/eos/user/t/therwig/jtfi/240621_TT_prod1/output_*.root");
@@ -16,5 +22,5 @@ void plot(){
         h1->Fill(nEle);
     }
     fout->Write();
-    gSystem->Exit(0);
+    return 0;
 }
