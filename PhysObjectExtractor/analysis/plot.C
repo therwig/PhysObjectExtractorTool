@@ -1,6 +1,8 @@
 void plot(){
-    TFile* f1 = new TFile("TT_10k.root");
-    TTreeReader reader("myelectrons/Events", f1);
+    TChain *c1 = new TChain("myelectrons/Events");
+    //c1->Add("/eos/user/t/therwig/jtfi/240621_SingleNeutrino_prod1/output_*.root");
+    c1->Add("/eos/user/t/therwig/jtfi/240621_TT_prod1/output_*.root");
+    TTreeReader reader(c1);
     TTreeReaderArray<float> ele_pt(reader, "electron_pt");
     
     TFile* fout = new TFile("hist.root","recreate");
