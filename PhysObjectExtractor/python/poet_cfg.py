@@ -45,7 +45,9 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 #---- Define the test source files to be read using the xrootd protocol (root://), or local files (file:)
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(
         #'root://eospublic.cern.ch//eos/opendata/cms/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/0005EA25-8CB8-E511-A910-00266CF85DA0.root'   
-        'root://eospublic.cern.ch//eos/opendata/cms/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/02837459-03C2-E511-8EA2-002590A887AC.root'
+        #'file:/eos/opendata/cms/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/02837459-03C2-E511-8EA2-002590A887AC.root' # this is TT
+        #'root://eospublic.cern.ch//eos/opendata/cms/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/02837459-03C2-E511-8EA2-002590A887AC.root'
+    'file:/eos/opendata/cms/mc/RunIIFall15MiniAODv2/SingleNeutrino/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/E6DAAEBB-E5BB-E511-A93D-E4115BCE00BE.root' # this is minBias
         )
 )
 if isData:
@@ -112,7 +114,8 @@ process.mygenparticle = cms.EDAnalyzer('GenParticleAnalyzer',
                                        pruned=cms.InputTag("prunedGenParticles"),
                                        #---- Collect particles with specific "status:pdgid"
                                        #---- if 0:0, collect them all 
-                                       input_particle = cms.vstring("1:11","1:13","1:22","2:15"))
+                                       #input_particle = cms.vstring("0:0")) #6","1:6","2:6","3:6","1:11","1:13","1:22","2:15"))
+                                       input_particle = cms.vstring("0:6","1:11","1:13","1:22","2:15"))
 
 #----- Begin Jet correction setup -----#
 JecString = 'MC'

@@ -1,0 +1,24 @@
+universe = vanilla
+executable            = runScript.sh
+#executable = containerWrapper.sh 
+#arguments             = flist_SingleNeutrino.txt $(ProcId) /eos/user/t/therwig/jtfi/240621_SingleNeutrino_prod1/
+arguments             = flist_TT.txt $(ProcId) /eos/user/t/therwig/jtfi/240621_TT_prod1/
+output                = logs/$(ClusterId).$(ProcId).out
+error                 = logs/$(ClusterId).$(ProcId).err
+log                   = logs/$(ClusterId).log
+transfer_input_files = ""
+transfer_output_files = ""
+# request_memory        = 4700
+
+#+JobFlavour           = "testmatch"
++JobFlavour           = "tomorrow" 
+# 1 hour
+#+JobFlavour           = "microcentury" 
+#+JobFlavour           = "espresso"
+MY.WantOS = "el7"
+
+#flist_SingleNeutrino.txt
+#queue 2454
+
+# flist_TT.txt
+queue 2413

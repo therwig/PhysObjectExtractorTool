@@ -168,7 +168,7 @@ GenParticleAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     {
         for(i=0;i<particle.size();i++)
         {
-         if((status_parsed[i]==gpt.status() && pdgId_parsed[i]==gpt.pdgId())||(status_parsed[i]==0 && pdgId_parsed[i]==0))
+            if((status_parsed[i]==gpt.status() && pdgId_parsed[i]==abs(gpt.pdgId()))||(status_parsed[i]==0 && pdgId_parsed[i]==0)||(status_parsed[i]==0 && pdgId_parsed[i]==abs(gpt.pdgId())))
          {
           GenPart_pt.push_back(gpt.pt());
           GenPart_eta.push_back(gpt.eta());
