@@ -45,9 +45,9 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 #---- Define the test source files to be read using the xrootd protocol (root://), or local files (file:)
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(
         #'root://eospublic.cern.ch//eos/opendata/cms/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/0005EA25-8CB8-E511-A910-00266CF85DA0.root'   
-        #'file:/eos/opendata/cms/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/02837459-03C2-E511-8EA2-002590A887AC.root' # this is TT
+        'file:/eos/opendata/cms/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/02837459-03C2-E511-8EA2-002590A887AC.root' # this is TT
         #'root://eospublic.cern.ch//eos/opendata/cms/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/02837459-03C2-E511-8EA2-002590A887AC.root'
-    'file:/eos/opendata/cms/mc/RunIIFall15MiniAODv2/SingleNeutrino/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/E6DAAEBB-E5BB-E511-A93D-E4115BCE00BE.root' # this is minBias
+    #'file:/eos/opendata/cms/mc/RunIIFall15MiniAODv2/SingleNeutrino/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/E6DAAEBB-E5BB-E511-A93D-E4115BCE00BE.root' # this is minBias
         )
 )
 if isData:
@@ -208,6 +208,10 @@ process.mytriggers = cms.EDAnalyzer('TriggerAnalyzer',
 process.mypackedcandidate = cms.EDAnalyzer('PackedCandidateAnalyzer',
                                            packed=cms.InputTag("packedPFCandidates")
                                            )
+process.myl1 = cms.EDAnalyzer('L1TriggerAnalyzer',
+                                           jet=cms.InputTag("Central")
+                              # vector<l1extra::L1JetParticle>        "l1extraParticles"          "Central"         "RECO"
+                                           )
 
 #---- Example of a very basic home-made filter to select only events of interest
 #---- The filter can be added to the running path below if needed 
@@ -231,14 +235,14 @@ if isData:
 	process.p = cms.Path(process.myelectrons+process.mymuons+process.mytaus+process.myphotons+process.mypvertex+
                      process.looseAK4Jets+process.patJetCorrFactorsReapplyJEC+process.slimmedJetsNewJEC+process.myjets+
                      process.looseAK8Jets+process.patJetCorrFactorsReapplyJECAK8+process.slimmedJetsAK8NewJEC+process.myfatjets+
-                     process.uncorrectedMet+process.uncorrectedPatMet+process.Type1CorrForNewJEC+process.slimmedMETsNewJEC+process.mymets
+                     process.uncorrectedMet+process.uncorrectedPatMet+process.Type1CorrForNewJEC+process.slimmedMETsNewJEC+process.mymets+process.myl1
 #                    +process.mypackedcandidate
                      )
 else:
 	process.p = cms.Path(process.myelectrons+process.mymuons+process.mytaus+process.myphotons+process.mypvertex+process.mygenparticle+
                      process.looseAK4Jets+process.patJetCorrFactorsReapplyJEC+process.slimmedJetsNewJEC+process.myjets+
                      process.looseAK8Jets+process.patJetCorrFactorsReapplyJECAK8+process.slimmedJetsAK8NewJEC+process.myfatjets+
-                     process.uncorrectedMet+process.uncorrectedPatMet+process.Type1CorrForNewJEC+process.slimmedMETsNewJEC+process.mymets
+                     process.uncorrectedMet+process.uncorrectedPatMet+process.Type1CorrForNewJEC+process.slimmedMETsNewJEC+process.mymets+process.myl1
 #                    +process.mypackedcandidate
                      )
 process.maxEvents.input = options.maxEvents
