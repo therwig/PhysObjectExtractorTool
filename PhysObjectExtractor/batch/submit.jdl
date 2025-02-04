@@ -1,8 +1,15 @@
 universe = vanilla
 executable            = runScript.sh
 #executable = containerWrapper.sh 
-#arguments             = flist_SingleNeutrino.txt $(ProcId) /eos/user/t/therwig/jtfi/240621_SingleNeutrino_prod1/
-arguments             = flist_TT.txt $(ProcId) /eos/user/t/therwig/jtfi/240621_TT_prod1/
+#arguments             = flist_SingleNeutrino.txt $(ProcId) /eos/user/t/therwig/jtfi/240919_SingleNeutrino_prod1/ False
+#arguments             = flist_TT.txt $(ProcId) /eos/user/t/therwig/jtfi/240919_TT_prod1/ False
+#arguments             = flist_ttMET.txt $(ProcId) /eos/user/t/therwig/jtfi/250123_ttMET_prod1/ False
+#arguments             = flist_Z_Ha_bbMET.txt $(ProcId) /eos/user/t/therwig/jtfi/240920_Z_Ha_bbMET_prod1/ False
+#arguments             = flist_vbfHbb.txt $(ProcId) /eos/user/t/therwig/jtfi/250123_vbfHbb_prod1/ False
+#arguments             = flist_Hinv.txt $(ProcId) /eos/user/t/therwig/jtfi/240920_Hinv_prod1/ False
+#arguments             = flist_Run2015D_ZeroBias.txt $(ProcId) /eos/user/t/therwig/jtfi/240919_ZeroBias_prod1/ True
+arguments             = flist_Disp2x2j.txt $(ProcId) /eos/user/t/therwig/jtfi/250123_disp2x2_prod2/ False
+
 output                = logs/$(ClusterId).$(ProcId).out
 error                 = logs/$(ClusterId).$(ProcId).err
 log                   = logs/$(ClusterId).log
@@ -18,7 +25,19 @@ transfer_output_files = ""
 MY.WantOS = "el7"
 
 #flist_SingleNeutrino.txt
+#queue 500
 #queue 2454
 
 # flist_TT.txt
-queue 2413
+#queue 2413
+
+#priority = 20
+#queue 1
+
+# 119 flist_Disp2x2j.txt
+# 3 flist_Z_Ha_bbMET.txt
+# 25 flist_vbfHbb.txt
+# 3 flist_Hinv.txt
+# 20 flist_ttMET.txt
+
+queue 119

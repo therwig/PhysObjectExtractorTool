@@ -1,11 +1,11 @@
 // usage: root "sorter.C(\"comb.root\",\"combo_sorted.root\")" 
 void sorter(TString inF, TString outF){
   TFile *f = new TFile(inF);
-  TTree *t_raw = (TTree*) f->Get("Events");
+  TTree *t_raw = (TTree*) f->Get("myl1/Events");
   t_raw->LoadBaskets();
 
   // Create index on tunix branch (time)                                                                                                     
-  Int_t nb_idx = t_raw->BuildIndex("PV_npvs");
+  Int_t nb_idx = t_raw->BuildIndex("PV_npvsGood_smr1");
   TTreeIndex* att_index = (TTreeIndex*) t_raw->GetTreeIndex();
 
   TFile *fo = new TFile(outF,"recreate","",209);

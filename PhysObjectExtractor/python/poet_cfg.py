@@ -35,7 +35,7 @@ process.MessageLogger.cerr.INFO = cms.untracked.PSet(
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
 
 #---- Select the maximum number of events to process (if -1, run over all events)
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #---- Needed configuration for dealing with transient tracks if required
 process.load("TrackingTools/TransientTrack/TransientTrackBuilder_cfi")
@@ -59,7 +59,8 @@ if isData:
     #---- Apply the data quality JSON file filter. This example is for 2015 data
     #---- It needs to be done after the process.source definition
     #---- Make sure the location of the file agrees with your setup
-    goodJSON = "data/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt"
+    #goodJSON = "data/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt"
+    goodJSON = "/afs/cern.ch/user/t/therwig/workspace/jtfi/CMSSW_7_6_7/src/PhysObjectExtractorTool/PhysObjectExtractor/data/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt"
     myLumis = LumiList.LumiList(filename=goodJSON).getCMSSWString().split(",")
     process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
     process.source.lumisToProcess.extend(myLumis)
@@ -209,9 +210,11 @@ process.mypackedcandidate = cms.EDAnalyzer('PackedCandidateAnalyzer',
                                            packed=cms.InputTag("packedPFCandidates")
                                            )
 process.myl1 = cms.EDAnalyzer('L1TriggerAnalyzer',
-                                           jet=cms.InputTag("Central")
-                              # vector<l1extra::L1JetParticle>        "l1extraParticles"          "Central"         "RECO"
-                                           )
+			      isData = cms.bool(isData),
+                              vertices=cms.InputTag("offlineSlimmedPrimaryVertices"), 
+                              beams=cms.InputTag("offlineBeamSpot"),
+                              jet=cms.InputTag("Central")
+                              )
 
 #---- Example of a very basic home-made filter to select only events of interest
 #---- The filter can be added to the running path below if needed 
@@ -232,17 +235,17 @@ process.myl1 = cms.EDAnalyzer('L1TriggerAnalyzer',
 process.TFileService = cms.Service("TFileService", fileName=cms.string("myoutput.root"))
 
 if isData:
-	process.p = cms.Path(process.myelectrons+process.mymuons+process.mytaus+process.myphotons+process.mypvertex+
-                     process.looseAK4Jets+process.patJetCorrFactorsReapplyJEC+process.slimmedJetsNewJEC+process.myjets+
-                     process.looseAK8Jets+process.patJetCorrFactorsReapplyJECAK8+process.slimmedJetsAK8NewJEC+process.myfatjets+
-                     process.uncorrectedMet+process.uncorrectedPatMet+process.Type1CorrForNewJEC+process.slimmedMETsNewJEC+process.mymets+process.myl1
+	process.p = cms.Path(process.myl1 #process.myelectrons+process.mymuons+process.mytaus+process.myphotons+process.mypvertex+
+                     # process.looseAK4Jets+process.patJetCorrFactorsReapplyJEC+process.slimmedJetsNewJEC+process.myjets+
+                     # process.looseAK8Jets+process.patJetCorrFactorsReapplyJECAK8+process.slimmedJetsAK8NewJEC+process.myfatjets+
+                     # process.uncorrectedMet+process.uncorrectedPatMet+process.Type1CorrForNewJEC+process.slimmedMETsNewJEC+process.mymets+process.myl1
 #                    +process.mypackedcandidate
                      )
 else:
-	process.p = cms.Path(process.myelectrons+process.mymuons+process.mytaus+process.myphotons+process.mypvertex+process.mygenparticle+
-                     process.looseAK4Jets+process.patJetCorrFactorsReapplyJEC+process.slimmedJetsNewJEC+process.myjets+
-                     process.looseAK8Jets+process.patJetCorrFactorsReapplyJECAK8+process.slimmedJetsAK8NewJEC+process.myfatjets+
-                     process.uncorrectedMet+process.uncorrectedPatMet+process.Type1CorrForNewJEC+process.slimmedMETsNewJEC+process.mymets+process.myl1
+	process.p = cms.Path(process.myl1 #process.myelectrons+process.mymuons+process.mytaus+process.myphotons+process.mypvertex+process.mygenparticle+
+                     # process.looseAK4Jets+process.patJetCorrFactorsReapplyJEC+process.slimmedJetsNewJEC+process.myjets+
+                     # process.looseAK8Jets+process.patJetCorrFactorsReapplyJECAK8+process.slimmedJetsAK8NewJEC+process.myfatjets+
+                     # process.uncorrectedMet+process.uncorrectedPatMet+process.Type1CorrForNewJEC+process.slimmedMETsNewJEC+process.mymets+process.myl1
 #                    +process.mypackedcandidate
                      )
 process.maxEvents.input = options.maxEvents

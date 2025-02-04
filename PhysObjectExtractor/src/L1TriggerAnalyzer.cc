@@ -21,6 +21,11 @@
 
 #include "DataFormats/L1Trigger/interface/L1JetParticle.h"
 
+//class to extract Vertex information
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
+
 //class to extract Packed Candidate information
 // #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 // #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -29,6 +34,7 @@
 //classes to save data
 #include "TTree.h"
 #include "TFile.h"
+#include "TRandom3.h"
 #include <vector>
 using std::vector;
 
@@ -56,19 +62,40 @@ class L1TriggerAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
+    bool isData;
     edm::EDGetTokenT<vector<l1extra::L1JetParticle> > centralJetToken_;
     edm::EDGetTokenT<vector<l1extra::L1JetParticle> > forwardJetToken_;
     edm::EDGetTokenT<vector<l1extra::L1JetParticle> > isoTauToken_;
     edm::EDGetTokenT<vector<l1extra::L1JetParticle> > tauToken_;
 
+    edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+    edm::EDGetTokenT<reco::BeamSpot> beamToken_;
+
     // ----------member data ---------------------------
       
     TTree *mtree;
-      
+    TRandom3* rand;
+    
     std::vector<float> jet_pt;
+    std::vector<float> jet_eta;
+    std::vector<float> jet_phi;
     std::vector<float> fwdjet_pt;
     std::vector<float> isotau_pt;
     std::vector<float> tau_pt;
+    float ht;
+    int PV_npvs;
+    float PV_npvs_smr1;
+    float PV_npvs_smr3;
+    int PV_npvsGood;
+    float PV_npvsGood_smr1;
+    float PV_npvsGood_smr3;
+
+    unsigned long long fEvent;
+    int fLumiBlock;
+    int fRun;
+    int fBx;
+    int fOrbit;
+
     
     // int numCandidates; //number of particles
     // std::vector<float> packed_pt; // transverse momentum
@@ -117,10 +144,13 @@ vector<l1extra::L1MuonParticle>       "l1extraParticles"          ""            
  */
 
 L1TriggerAnalyzer::L1TriggerAnalyzer(const edm::ParameterSet& iConfig):
+    isData(iConfig.getParameter<bool>("isData")),
     centralJetToken_(consumes <vector<l1extra::L1JetParticle> > ( edm::InputTag("l1extraParticles","Central") )),
-    forwardJetToken_(consumes <vector<l1extra::L1JetParticle> > ( edm::InputTag("l1extraParticles","Forward") )),
-    isoTauToken_(consumes <vector<l1extra::L1JetParticle> > ( edm::InputTag("l1extraParticles","IsoTau") )),
-    tauToken_(consumes <vector<l1extra::L1JetParticle> > ( edm::InputTag("l1extraParticles","Tau") ))
+    // forwardJetToken_(consumes <vector<l1extra::L1JetParticle> > ( edm::InputTag("l1extraParticles","Forward") )),
+    // isoTauToken_(consumes <vector<l1extra::L1JetParticle> > ( edm::InputTag("l1extraParticles","IsoTau") )),
+    // tauToken_(consumes <vector<l1extra::L1JetParticle> > ( edm::InputTag("l1extraParticles","Tau") )),
+    vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+    beamToken_(consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beams")))
     // jetToken_(consumes <vector<l1extra::L1JetParticle> > ( "l1extraParticles","Central" ))
     //jetToken_(consumes <vector<l1extra::L1JetParticle> > (iConfig.getParameter<edm::InputTag>("jet")))
 {
@@ -128,12 +158,31 @@ L1TriggerAnalyzer::L1TriggerAnalyzer(const edm::ParameterSet& iConfig):
    
    edm::Service<TFileService> fs;
    mtree = fs->make<TTree>("Events", "Events");
+   rand = new TRandom3(2024);
 
    mtree->Branch("jet_pt",&jet_pt);
-   mtree->Branch("fwdjet_pt",&fwdjet_pt);
-   mtree->Branch("isotau_pt",&isotau_pt);
-   mtree->Branch("tau_pt",&tau_pt);
-  
+   mtree->Branch("jet_eta",&jet_eta);
+   mtree->Branch("jet_phi",&jet_phi);
+   // mtree->Branch("fwdjet_pt",&fwdjet_pt);
+   // mtree->Branch("isotau_pt",&isotau_pt);
+   // mtree->Branch("tau_pt",&tau_pt);
+   mtree->Branch("ht",&ht);
+
+   mtree->Branch("PV_npvs",&PV_npvs);
+   mtree->Branch("PV_npvs_smr1",&PV_npvs_smr1);
+   mtree->Branch("PV_npvs_smr3",&PV_npvs_smr3);
+   mtree->Branch("PV_npvsGood",&PV_npvsGood);
+   mtree->Branch("PV_npvsGood_smr1",&PV_npvsGood_smr1);
+   mtree->Branch("PV_npvsGood_smr3",&PV_npvsGood_smr3);
+
+   if(isData){
+       mtree->Branch("evt",&fEvent);
+       mtree->Branch("lumiBlock",&fLumiBlock);
+       mtree->Branch("run",&fRun);
+       mtree->Branch("bx",&fBx);
+       mtree->Branch("orbit",&fOrbit);
+   }
+
    // mtree->Branch("numCandidates",&numCandidates);
    // mtree->GetBranch("numCandidates")->SetTitle("number of packed particles");
    // mtree->Branch("packed_pt",&packed_pt);
@@ -180,7 +229,7 @@ L1TriggerAnalyzer::~L1TriggerAnalyzer()
 
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
-
+    delete rand;
 }
 
 
@@ -197,33 +246,75 @@ L1TriggerAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    
    Handle<vector<l1extra::L1JetParticle> > jets;
    iEvent.getByToken(centralJetToken_,jets);
-   Handle<vector<l1extra::L1JetParticle> > fwdjets;
-   iEvent.getByToken(forwardJetToken_,fwdjets);
-   Handle<vector<l1extra::L1JetParticle> > isotaus;
-   iEvent.getByToken(isoTauToken_,isotaus);
-   Handle<vector<l1extra::L1JetParticle> > taus;
-   iEvent.getByToken(tauToken_,taus);
+   // Handle<vector<l1extra::L1JetParticle> > fwdjets;
+   // iEvent.getByToken(forwardJetToken_,fwdjets);
+   // Handle<vector<l1extra::L1JetParticle> > isotaus;
+   // iEvent.getByToken(isoTauToken_,isotaus);
+   // Handle<vector<l1extra::L1JetParticle> > taus;
+   // iEvent.getByToken(tauToken_,taus);
 
    jet_pt.clear();
-   fwdjet_pt.clear();
-   isotau_pt.clear();
-   tau_pt.clear();
+   jet_eta.clear();
+   jet_phi.clear();
+   // fwdjet_pt.clear();
+   // isotau_pt.clear();
+   // tau_pt.clear();
+   ht=0;
+   PV_npvs=0;
+   PV_npvs_smr1=0;
+   PV_npvs_smr3=0;
+   PV_npvsGood=0;
+   PV_npvsGood_smr1=0;
+   PV_npvsGood_smr3=0;
       
    for (const l1extra::L1JetParticle &jet : *jets){
        jet_pt.push_back(jet.pt());
+       jet_eta.push_back(jet.eta());
+       jet_phi.push_back(jet.phi());
+       ht += jet.pt();
    } 
-   for (const l1extra::L1JetParticle &jet : *fwdjets){
-       fwdjet_pt.push_back(jet.pt());
-   } 
-   for (const l1extra::L1JetParticle &tau : *taus){
-       tau_pt.push_back(tau.pt());
-   } 
-   for (const l1extra::L1JetParticle &tau : *isotaus){
-       isotau_pt.push_back(tau.pt());
+   // for (const l1extra::L1JetParticle &jet : *fwdjets){
+   //     fwdjet_pt.push_back(jet.pt());
+   // } 
+   // for (const l1extra::L1JetParticle &tau : *taus){
+   //     tau_pt.push_back(tau.pt());
+   // } 
+   // for (const l1extra::L1JetParticle &tau : *isotaus){
+   //     isotau_pt.push_back(tau.pt());
+   // } 
+   // get vertex info
+   
+   Handle<reco::VertexCollection> vertices;
+   iEvent.getByToken(vtxToken_, vertices);
+   if (vertices->empty()) return; // skip the event if no PV found
+    
+   Handle<reco::BeamSpot> beamSpotHandle;
+   iEvent.getByToken(beamToken_, beamSpotHandle);
+   reco::BeamSpot vertexBeamSpot= *beamSpotHandle;
+   
+   for (const reco::Vertex &vtx : *vertices){
+       PV_npvs++;
+       if (!vtx.isFake() && vtx.isValid() && vtx.ndof()>4 && fabs(vtx.z()-vertexBeamSpot.z0())<24. && vtx.position().Rho() < 2.)
+           PV_npvsGood++;
    } 
 
-  mtree->Fill();
-  return;      
+   PV_npvs_smr1 = rand->Gaus(PV_npvs,1);
+   PV_npvs_smr3 = rand->Gaus(PV_npvs,3);
+   PV_npvsGood_smr1 = rand->Gaus(PV_npvsGood,1);
+   PV_npvsGood_smr3 = rand->Gaus(PV_npvsGood,3);
+
+   // event info
+   if(isData){
+       fEvent = iEvent.id().event();
+       fLumiBlock = iEvent.luminosityBlock();
+       fRun = iEvent.id().run();
+       fBx = iEvent.bunchCrossing();
+       fOrbit = iEvent.orbitNumber();
+   }
+   //  std::cout << iEvent.id().event() << std::endl;
+   
+   mtree->Fill();
+   return;      
           
  
 }

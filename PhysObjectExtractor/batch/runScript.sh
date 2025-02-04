@@ -4,6 +4,7 @@ startTime=`date +%s`
 fileList="$1"
 fileIndex=$(($2+1)) # files indexed from 1, but job index runs from 0
 outDir="$3"
+isData="$4"
 
 runDir=`pwd`
 source /cvmfs/cms.cern.ch/cmsset_default.sh
@@ -17,7 +18,7 @@ cd $runDir
 outFile="output_${fileIndex}.root"
 cat >> cfg.py <<_EOF_
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(
     'file:${inFile}'
         )
@@ -32,7 +33,7 @@ _EOF_
 # )
 # process.TFileService = cms.Service("TFileService", fileName=cms.string("myoutput.root"))
 
-cmsRun cfg.py
+cmsRun cfg.py $isData
 ls -lth ${outFile}
 
 mkdir -p $outDir/
